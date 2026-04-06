@@ -2,7 +2,12 @@
 
 **The web, through the eyes of a machine.**
 
-A semantic terminal browser that renders web pages as structured, numbered, interactive text. Built for LLM agents and CLI-native developers.
+[![npm version](https://img.shields.io/npm/v/webpilot.svg)](https://www.npmjs.com/package/webpilot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A semantic terminal browser that renders web pages as structured, numbered, interactive text. Built for **LLM agents** (via [MCP](https://modelcontextprotocol.io)), **CLI-native developers**, and **automation pipelines**.
+
+> **Key insight:** LLMs don't need to *see* a website — they need to *understand* it. Webpilot uses the accessibility tree (the same structure screen readers use) to represent any website as numbered elements that both humans and machines can interact with.
 
 ```
 $ webpilot https://github.com
@@ -22,30 +27,27 @@ webpilot > click [1]
 
   ↪ Navigated: https://github.com → https://github.com/login
 
-  Sign in to GitHub
-  https://github.com/login
-  ────────────────────────────────────────────
-
   [1] 📌 h1           Sign in to GitHub
   [2] ✏️  textbox      Username or email address: (empty)
   [3] ✏️  textbox      Password: (empty)
   [4] ⏺  button       [ Sign in ]
   [5] 🔗 link         Forgot password?
   [6] 🔗 link         Create an account
-
-webpilot > type [2] "myuser"
-webpilot > type [3] "mypass"
-webpilot > click [4]
 ```
 
-## Why?
+## Why Webpilot?
 
-LLMs today can read code and edit code, but they **can't see or interact with the running website**. Existing terminal browsers either:
-- Render pixels as characters (useless for LLMs)
-- Don't support JavaScript (useless for modern web)
-- Require scripting, not interactive browsing
-
-Webpilot is different: it uses the **accessibility tree** — the same semantic structure screen readers use — to represent any website as numbered, interactive text that both humans and machines can understand.
+| | Browsh | Lynx | Carbonyl | **Webpilot** |
+|---|---|---|---|---|
+| JavaScript support | ✅ | ❌ | ✅ | ✅ |
+| SPAs (React, Next.js, Vue) | ✅ | ❌ | ✅ | ✅ |
+| LLM-parseable output | ❌ | ❌ | ❌ | ✅ |
+| MCP server for AI agents | ❌ | ❌ | ❌ | ✅ |
+| Element interaction by ID | ❌ | ❌ | ❌ | ✅ |
+| State diffs | ❌ | ❌ | ❌ | ✅ |
+| Semantic (a11y tree) | ❌ | Partial | ❌ | ✅ |
+| No pixels, no rendering | ❌ | ✅ | ❌ | ✅ |
+| Zero cost (runs locally) | ✅ | ✅ | ✅ | ✅ |
 
 ## Install
 
@@ -54,7 +56,7 @@ npm install -g webpilot
 npx playwright install chromium   # one-time browser setup
 ```
 
-## Usage
+## Quick Start
 
 ```bash
 # Interactive REPL
@@ -67,51 +69,148 @@ webpilot --agent https://google.com
 echo 'goto https://example.com
 extract --links' | webpilot --pipe
 
-# Quick shortcuts
+# Shorthand URLs
 webpilot :3000              # → http://localhost:3000
 webpilot google.com         # → https://google.com
 ```
 
-## Commands
+## MCP Server (for Claude, ChatGPT, etc.)
+
+Webpilot ships as an **MCP server** — any LLM agent that supports the [Model Context Protocol](https://modelcontextprotocol.io) can browse the web through it.
+
+### Setup with Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "webpilot": {
+      "command": "npx",
+      "args": ["-y", "webpilot", "--mcp"]
+    }
+  }
+}
+```
+
+### Setup with VS Code / Copilot
+
+Add to your `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "webpilot": {
+      "command": "npx",
+      "args": ["-y", "webpilot", "--mcp"]
+    }
+  }
+}
+```
+
+### Available MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `web_navigate` | Open a URL and get page state |
+| `web_snapshot` | Get current page as numbered elements |
+| `web_click` | Click element by `[n]` ID |
+| `web_type` | Type into input/textarea by `[n]` ID |
+| `web_select` | Select dropdown option |
+| `web_scroll` | Scroll up/down/top/bottom |
+| `web_back` | Go back in history |
+| `web_extract` | Extract text, links, tables, forms, or metadata |
+| `web_eval` | Execute JavaScript in page context |
+| `web_screenshot` | Capture page as PNG image |
+| `web_tabs` | List open tabs |
+| `web_newtab` | Open new tab |
+| `web_close` | Close browser session |
+
+### Example Agent Interaction
+
+```
+Agent: web_navigate("https://news.ycombinator.com")
+→ 280 elements: [1] link "Hacker News", [2] link "new", [3] link "past" ...
+
+Agent: web_click(5)
+→ Navigated to article page, 42 elements
+
+Agent: web_extract({ type: "text" })
+→ Full article text extracted
+
+Agent: web_back()
+→ Back to Hacker News front page
+```
+
+## Commands Reference
 
 | Command | Description |
 |---------|-------------|
 | `goto <url>` | Navigate to URL |
-| `click [n]` | Click element n |
-| `type [n] "text"` | Type into element n |
-| `select [n] "opt"` | Select dropdown option |
+| `click [n]` | Click element by ID |
+| `type [n] "text"` | Type into form field |
+| `select [n] "option"` | Select dropdown option |
+| `check [n]` / `hover [n]` | Toggle checkbox / hover |
+| `press <key>` | Press keyboard key (Enter, Tab, etc.) |
 | `back` / `forward` | Browser history |
-| `scroll down/up` | Scroll the page |
-| `find "text"` | Search elements |
-| `extract --links` | Extract all links |
-| `extract --tables` | Extract tables |
+| `refresh` | Reload current page |
+| `scroll down\|up\|top\|bottom` | Scroll the page |
+| `find "text"` | Search for text in elements |
+| `show` | Re-display current page state |
+| `extract --text\|--links\|--tables\|--forms\|--meta` | Extract structured content |
 | `eval "js"` | Execute JavaScript |
-| `screenshot` | Save screenshot |
-| `tabs` / `newtab` | Tab management |
+| `screenshot [path]` | Save screenshot |
+| `source` | View page HTML |
+| `tabs` / `tab [n]` / `newtab` / `closetab` | Tab management |
 | `help` | Show all commands |
 
 ## Three Output Modes
 
-**Human** (default) — Colored, formatted for terminal reading
-**Agent** (`--agent`) — JSON structured for LLM consumption  
-**Pipe** (auto when piped) — Plain text for `grep`, `awk`, scripting
+- **Human** (default) — Colored, formatted for terminal reading
+- **Agent** (`--agent`) — JSON structured output for LLM consumption
+- **Pipe** (auto-detected) — Plain text for `grep`, `awk`, scripting
 
 ## How It Works
 
-1. **Playwright** launches a headless Chromium browser (full JS, cookies, SPAs — everything works)
-2. **Accessibility Tree** is extracted — the semantic structure of the page, not pixels
-3. **Elements get numbered** — `[1]`, `[2]`, `[3]`... for easy targeting
-4. **State diffs** show what changed after each action, not the entire page
-5. **You interact** via simple commands: `click [3]`, `type [5] "hello"`
+```
+Website → Playwright (headless Chromium) → CDP Accessibility Tree → Numbered Elements → You
+```
 
-## Works Everywhere
+1. **Playwright** launches headless Chromium — full JS, cookies, SPAs, everything works
+2. The **accessibility tree** is extracted via Chrome DevTools Protocol — semantic structure, not pixels
+3. Elements get **numbered IDs** — `[1]`, `[2]`, `[3]`... for easy targeting
+4. After each action, a **state diff** shows what changed, not the entire page
+5. You interact with simple commands: `click [3]`, `type [5] "hello"`
 
-- ✅ `localhost:3000` (your dev server)
-- ✅ `google.com` (public websites)
-- ✅ React / Next.js / Vue / Angular (full JS execution)
+## Works With Everything
+
+- ✅ `localhost:3000` — your dev server
+- ✅ Public websites — Google, GitHub, HN, anything
+- ✅ React / Next.js / Vue / Angular / Svelte — full JS execution
 - ✅ SPAs with client-side routing
-- ✅ Sites behind login (cookies persist in session)
-- ✅ Dynamic content (JS executes before snapshot)
+- ✅ Sites behind login — cookies persist in session
+- ✅ Dynamic content — JS runs before each snapshot
+- ✅ Forms, dropdowns, checkboxes — full interaction
+- ✅ Multi-tab browsing
+
+## Use Cases
+
+- **LLM agents browsing the web** — Claude/ChatGPT navigate, fill forms, extract data via MCP
+- **E2E testing in CI** — pipe commands, assert output, no flaky selectors
+- **Web scraping** — extract links, tables, text from any JS-rendered page
+- **Accessibility auditing** — see exactly what the a11y tree exposes
+- **SSH/headless environments** — browse from any terminal, no GUI needed
+
+## Development
+
+```bash
+git clone https://github.com/luckysolanki902/webpilot.git
+cd webpilot
+npm install
+npx playwright install chromium
+npm run build    # → dist/index.js
+npm run dev      # Watch mode
+```
 
 ## License
 
