@@ -2,6 +2,7 @@ import { program } from "commander";
 import type { WebpilotConfig, OutputMode } from "./core/types.js";
 import { startRepl } from "./cli/repl.js";
 import { startPipeMode } from "./cli/pipe.js";
+import { startMcpServer } from "./mcp/server.js";
 
 program
   .name("webpilot")
@@ -39,11 +40,8 @@ program
     };
 
     if (config.mcp) {
-      // MCP server mode — will be implemented in Phase 3
-      console.error(
-        "MCP server mode coming soon. Use REPL mode for now: webpilot [url]"
-      );
-      process.exit(1);
+      await startMcpServer(config);
+      return;
     }
 
     if (config.mode === "pipe" || options.pipe) {
