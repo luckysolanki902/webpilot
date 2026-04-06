@@ -312,12 +312,14 @@ async function startStdioMcpServer(config: WebpilotConfig): Promise<void> {
 
 async function startHttpMcpServer(config: WebpilotConfig): Promise<void> {
   const port = config.mcpPort!;
-  const { server, browser, ctx } = createWebpilotServer(config);
 
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: () => randomUUID(),
-  });
-  await server.connect(transport);
+  // Shared browser + state across all requests
+  const browser = new BrowserEngine({ ...config, headless: true, mode: "agent" });
+  const ctx = {
+    analyzer: null as unknown as PageAnalyzer,
+    differ: null as unknown as StateDiffer,
+    launched: false,
+  };
 
   const httpServer = createServer(async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -333,12 +335,23 @@ async function startHttpMcpServer(config: WebpilotConfig): Promise<void> {
 
     const url = new URL(req.url || "/", `http://localhost:${port}`);
 
-    if (url.pathname === "/mcp") {
-      await transport.handleRequest(req, res);
-    } else {
+    if (url.pathname !== "/mcp") {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ name: "webpilot", version: "0.1.0", status: "running", mcp: "/mcp" }));
+      return;
     }
+
+    // Stateless: new server + transport per request, shared browser
+    const server = new McpServer(MCP_INFO, MCP_OPTIONS);
+    registerTools(server, browser, ctx, config);
+
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+    });
+    await server.connect(transport);
+    await transport.handleRequest(req, res);
+    await transport.close();
+    await server.close();
   });
 
   httpServer.listen(port, () => {
@@ -347,8 +360,6 @@ async function startHttpMcpServer(config: WebpilotConfig): Promise<void> {
 
   const shutdown = async () => {
     if (ctx.launched) await browser.close();
-    await transport.close();
-    await server.close();
     httpServer.close();
     process.exit(0);
   };

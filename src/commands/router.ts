@@ -302,7 +302,16 @@ async function cmdPress(
   const key = cmd.args[0];
   if (!key) return { success: false, error: "Usage: press <key>" };
 
+  // Set up navigation listener before pressing key
+  const navPromise = browser.activePage
+    .waitForNavigation({ waitUntil: "domcontentloaded", timeout: 3000 })
+    .catch(() => {});
+
   await browser.pressKey(key);
+  await navPromise;
+
+  // Extra settle time for JS-driven updates
+  await new Promise((r) => setTimeout(r, 500));
 
   const state = await analyzer.analyze();
   const diff = differ.computeDiff(state);
