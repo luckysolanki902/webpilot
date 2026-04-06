@@ -1,6 +1,6 @@
 {
   "name": "webpilot-cli",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A semantic terminal browser for LLM agents and CLI-native developers. Browse any website from your terminal — no GUI, no mouse, just commands.",
   "main": "dist/index.js",
   "bin": {
@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
-  }, 
+  },
   "keywords": [
     "terminal-browser",
     "cli-browser",
