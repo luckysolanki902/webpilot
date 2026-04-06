@@ -1,0 +1,56 @@
+import { program } from "commander";
+import type { WebpilotConfig, OutputMode } from "./core/types.js";
+import { startRepl } from "./cli/repl.js";
+import { startPipeMode } from "./cli/pipe.js";
+
+program
+  .name("webpilot")
+  .description(
+    "A semantic terminal browser for LLM agents and CLI-native developers."
+  )
+  .version("0.1.0")
+  .argument("[url]", "URL to navigate to")
+  .option("--agent", "Agent output mode (JSON structured output)")
+  .option("--pipe", "Pipe mode (read commands from stdin)")
+  .option("--mcp", "Start as MCP server")
+  .option("--headed", "Run browser in headed mode (visible window)")
+  .option("--viewport <dimensions>", "Viewport size (e.g., 1280x720)", "1280x720")
+  .option("--timeout <ms>", "Navigation timeout in milliseconds", "30000")
+  .action(async (url: string | undefined, options: Record<string, unknown>) => {
+    const [width, height] = (options.viewport as string)
+      .split("x")
+      .map(Number);
+
+    const mode: OutputMode = options.agent
+      ? "agent"
+      : options.pipe
+        ? "pipe"
+        : !process.stdout.isTTY
+          ? "pipe"
+          : "human";
+
+    const config: WebpilotConfig = {
+      mode,
+      headless: !options.headed,
+      viewport: { width: width || 1280, height: height || 720 },
+      timeout: Number(options.timeout) || 30000,
+      mcp: !!options.mcp,
+      url,
+    };
+
+    if (config.mcp) {
+      // MCP server mode — will be implemented in Phase 3
+      console.error(
+        "MCP server mode coming soon. Use REPL mode for now: webpilot [url]"
+      );
+      process.exit(1);
+    }
+
+    if (config.mode === "pipe" || options.pipe) {
+      await startPipeMode(config);
+    } else {
+      await startRepl(config);
+    }
+  });
+
+program.parse();
