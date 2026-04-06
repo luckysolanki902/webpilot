@@ -2,7 +2,7 @@
 
 **The web, through the eyes of a machine.**
 
-[![npm version](https://img.shields.io/npm/v/webpilot.svg)](https://www.npmjs.com/package/webpilot)
+[![npm version](https://img.shields.io/npm/v/webpilot-cli.svg)](https://www.npmjs.com/package/webpilot-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A semantic terminal browser that renders web pages as structured, numbered, interactive text. Built for **LLM agents** (via [MCP](https://modelcontextprotocol.io)), **CLI-native developers**, and **automation pipelines**.
@@ -10,7 +10,7 @@ A semantic terminal browser that renders web pages as structured, numbered, inte
 > **Key insight:** LLMs don't need to *see* a website — they need to *understand* it. Webpilot uses the accessibility tree (the same structure screen readers use) to represent any website as numbered elements that both humans and machines can interact with.
 
 ```
-$ webpilot https://github.com
+$ wpilot https://github.com
 
 ┌──────────────────────────────────────────────────────────────┐
   GitHub: Let's build from here
@@ -64,7 +64,7 @@ The screenshot webpilot saves:
 ## Install
 
 ```bash
-npm install -g webpilot
+npm install -g webpilot-cli
 npx playwright install chromium   # one-time browser setup
 ```
 
@@ -72,18 +72,18 @@ npx playwright install chromium   # one-time browser setup
 
 ```bash
 # Interactive REPL
-webpilot https://google.com
+wpilot https://google.com
 
 # JSON output for LLM agents
-webpilot --agent https://google.com
+wpilot --agent https://google.com
 
 # Pipe mode for scripting
 echo 'goto https://example.com
-extract --links' | webpilot --pipe
+extract --links' | wpilot --pipe
 
 # Shorthand URLs
-webpilot :3000              # → http://localhost:3000
-webpilot google.com         # → https://google.com
+wpilot :3000              # → http://localhost:3000
+wpilot google.com         # → https://google.com
 ```
 
 ## MCP Server (for Claude, ChatGPT, etc.)
@@ -99,7 +99,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "webpilot": {
       "command": "npx",
-      "args": ["-y", "webpilot", "--mcp"]
+      "args": ["-y", "webpilot-cli", "--mcp"]
     }
   }
 }
@@ -114,7 +114,7 @@ Add to your `.vscode/mcp.json`:
   "servers": {
     "webpilot": {
       "command": "npx",
-      "args": ["-y", "webpilot", "--mcp"]
+      "args": ["-y", "webpilot-cli", "--mcp"]
     }
   }
 }
