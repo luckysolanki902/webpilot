@@ -166,8 +166,6 @@ export class PageAnalyzer {
    * This allows us to use CSS selectors like [data-webpilot-id="3"] to target elements.
    */
   private async injectDataAttributes(elements: PageElement[]): Promise<void> {
-    const interactiveElements = elements.filter((el) => INTERACTIVE_ROLES.has(el.role));
-
     await this.browser.evaluate(`
       (function() {
         // Remove old IDs
@@ -177,37 +175,74 @@ export class PageAnalyzer {
 
         // Strategy: walk the a11y-relevant elements and assign IDs based on role+name matching
         const assignments = ${JSON.stringify(
-          interactiveElements.map((el) => ({
+          elements.map((el) => ({
             id: el.id,
             role: el.role,
             name: el.name,
             value: el.value,
+            level: el.level,
           }))
         )};
 
-        for (const a of assignments) {
-          let selector = '';
-          const roleToTag = {
-            'link': 'a',
-            'button': 'button,[role="button"],input[type="submit"],input[type="button"]',
-            'textbox': 'input[type="text"],input[type="email"],input[type="password"],input[type="search"],input[type="url"],input[type="tel"],input[type="number"],input:not([type]),textarea,[role="textbox"],[contenteditable="true"]',
-            'searchbox': 'input[type="search"],[role="searchbox"]',
-            'combobox': 'select,[role="combobox"]',
-            'checkbox': 'input[type="checkbox"],[role="checkbox"]',
-            'radio': 'input[type="radio"],[role="radio"]',
-            'switch': '[role="switch"]',
-            'slider': 'input[type="range"],[role="slider"]',
-            'spinbutton': 'input[type="number"],[role="spinbutton"]',
-            'menuitem': '[role="menuitem"]',
-            'option': 'option,[role="option"]',
-            'tab': '[role="tab"]',
-          };
+        const roleToTag = {
+          'link': 'a,[role="link"]',
+          'button': 'button,[role="button"],input[type="submit"],input[type="button"]',
+          'textbox': 'input[type="text"],input[type="email"],input[type="password"],input[type="search"],input[type="url"],input[type="tel"],input[type="number"],input:not([type]),textarea,[role="textbox"],[contenteditable="true"]',
+          'searchbox': 'input[type="search"],[role="searchbox"]',
+          'combobox': 'select,[role="combobox"]',
+          'checkbox': 'input[type="checkbox"],[role="checkbox"]',
+          'radio': 'input[type="radio"],[role="radio"]',
+          'switch': '[role="switch"]',
+          'slider': 'input[type="range"],[role="slider"]',
+          'spinbutton': 'input[type="number"],[role="spinbutton"]',
+          'menuitem': '[role="menuitem"]',
+          'option': 'option,[role="option"]',
+          'tab': '[role="tab"]',
+          'heading': 'h1,h2,h3,h4,h5,h6,[role="heading"]',
+          'paragraph': 'p',
+          'img': 'img,[role="img"]',
+          'table': 'table,[role="table"],[role="grid"]',
+          'cell': 'td,th,[role="cell"],[role="gridcell"],[role="columnheader"],[role="rowheader"]',
+          'row': 'tr,[role="row"]',
+          'list': 'ul,ol,[role="list"]',
+          'listitem': 'li,[role="listitem"]',
+          'navigation': 'nav,[role="navigation"]',
+          'main': 'main,[role="main"]',
+          'banner': 'header,[role="banner"]',
+          'form': 'form,[role="form"]',
+          'search': '[role="search"]',
+          'alert': '[role="alert"]',
+          'dialog': 'dialog,[role="dialog"],[role="alertdialog"]',
+          'blockquote': 'blockquote',
+          'code': 'code,pre',
+          'figure': 'figure',
+          'article': 'article,[role="article"]',
+          'section': 'section,[role="region"]',
+          'region': '[role="region"],section[aria-label]',
+          'complementary': 'aside,[role="complementary"]',
+          'contentinfo': 'footer,[role="contentinfo"]',
+          'status': '[role="status"]',
+          'treeitem': '[role="treeitem"]',
+        };
 
+        for (const a of assignments) {
           const tagSelector = roleToTag[a.role] || '[role="' + a.role + '"]';
-          const candidates = document.querySelectorAll(tagSelector);
+          let candidates;
+          try {
+            candidates = document.querySelectorAll(tagSelector);
+          } catch(e) {
+            continue;
+          }
 
           for (const el of candidates) {
             if (el.hasAttribute('data-webpilot-id')) continue;
+
+            // For headings, also match by level
+            if (a.role === 'heading' && a.level) {
+              const tagLevel = parseInt(el.tagName?.replace('H', '') || '0');
+              const ariaLevel = parseInt(el.getAttribute('aria-level') || '0');
+              if (tagLevel !== a.level && ariaLevel !== a.level) continue;
+            }
 
             // Match by accessible name
             const ariaLabel = el.getAttribute('aria-label') || '';
@@ -215,13 +250,15 @@ export class PageAnalyzer {
             const placeholder = el.getAttribute('placeholder') || '';
             const title = el.getAttribute('title') || '';
             const value = el.value || el.getAttribute('value') || '';
+            const alt = el.getAttribute('alt') || '';
 
             const matchesName = a.name && (
               ariaLabel === a.name ||
               innerText === a.name ||
               innerText.startsWith(a.name) ||
               placeholder === a.name ||
-              title === a.name
+              title === a.name ||
+              alt === a.name
             );
 
             const matchesValue = a.value !== undefined && value === a.value;
