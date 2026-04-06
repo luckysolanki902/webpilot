@@ -71,23 +71,84 @@ export class BrowserEngine {
   }
 
   async clickElement(selector: string): Promise<void> {
-    await this.activePage.click(selector, { timeout: 5000 });
+    try {
+      await this.activePage.click(selector, { timeout: 5000 });
+    } catch (err: unknown) {
+      const msg = (err as Error).message || "";
+      if (
+        msg.includes("not visible") ||
+        msg.includes("outside of the viewport") ||
+        msg.includes("intercept") ||
+        msg.includes("Timeout")
+      ) {
+        // Element is in the a11y tree but not visually clickable — use JS click
+        const el = this.activePage.locator(selector);
+        await el.evaluate((node: HTMLElement) => node.click());
+      } else {
+        throw err;
+      }
+    }
   }
 
   async typeIntoElement(selector: string, text: string, clear = true): Promise<void> {
-    if (clear) {
-      await this.activePage.fill(selector, text);
-    } else {
-      await this.activePage.type(selector, text);
+    try {
+      if (clear) {
+        await this.activePage.fill(selector, text);
+      } else {
+        await this.activePage.type(selector, text);
+      }
+    } catch (err: unknown) {
+      const msg = (err as Error).message || "";
+      if (
+        msg.includes("not visible") ||
+        msg.includes("outside of the viewport") ||
+        msg.includes("Timeout")
+      ) {
+        const el = this.activePage.locator(selector);
+        await el.evaluate(
+          (node: HTMLInputElement, val: string) => {
+            node.focus();
+            node.value = val;
+            node.dispatchEvent(new Event("input", { bubbles: true }));
+            node.dispatchEvent(new Event("change", { bubbles: true }));
+          },
+          text
+        );
+      } else {
+        throw err;
+      }
     }
   }
 
   async selectOption(selector: string, value: string): Promise<void> {
-    await this.activePage.selectOption(selector, { label: value });
+    try {
+      await this.activePage.selectOption(selector, { label: value });
+    } catch (err: unknown) {
+      const msg = (err as Error).message || "";
+      if (msg.includes("not visible") || msg.includes("Timeout")) {
+        const el = this.activePage.locator(selector);
+        await el.evaluate(
+          (node: HTMLSelectElement, val: string) => {
+            for (const opt of Array.from(node.options)) {
+              if (opt.label === val || opt.text === val || opt.value === val) {
+                node.value = opt.value;
+                node.dispatchEvent(new Event("change", { bubbles: true }));
+                break;
+              }
+            }
+          },
+          value
+        );
+      } else {
+        throw err;
+      }
+    }
   }
 
   async hoverElement(selector: string): Promise<void> {
-    await this.activePage.hover(selector);
+    await this.activePage.hover(selector, { timeout: 5000 }).catch(() => {
+      // Ignore hover failures on hidden elements
+    });
   }
 
   async pressKey(key: string): Promise<void> {

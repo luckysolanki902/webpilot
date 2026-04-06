@@ -16,7 +16,7 @@ program
   .option("--mcp", "Start as MCP server (stdio)")
   .option("--mcp-port <port>", "Start MCP server on HTTP port (for ChatGPT, remote agents)")
   .option("--headed", "Run browser in headed mode (visible window)")
-  .option("--viewport <dimensions>", "Viewport size (e.g., 1280x720)", "1280x720")
+  .option("--viewport <dimensions>", "Viewport size (e.g., 1440x900)", "1440x900")
   .option("--timeout <ms>", "Navigation timeout in milliseconds", "30000")
   .action(async (url: string | undefined, options: Record<string, unknown>) => {
     const [width, height] = (options.viewport as string)
