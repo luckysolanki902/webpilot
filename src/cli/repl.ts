@@ -17,23 +17,23 @@ export async function startRepl(config: WebpilotConfig): Promise<void> {
   const differ = new StateDiffer();
   let analyzer: PageAnalyzer;
 
-  console.log(chalk.bold.cyan("\n  ⚡ Webpilot"));
-  console.log(chalk.dim("  The web, through the eyes of a machine.\n"));
+  console.log(chalk.hex("#7dd3fc").bold("\n  webpilot"));
+  console.log(chalk.hex("#475569")("  the web, through the eyes of a machine.\n"));
 
   try {
-    console.log(chalk.dim("  Launching browser..."));
+    console.log(chalk.hex("#475569")("  launching browser..."));
     await browser.launch();
     analyzer = new PageAnalyzer(browser);
 
     // Navigate to initial URL if provided
     if (config.url) {
-      console.log(chalk.dim(`  Navigating to ${config.url}...`));
+      console.log(chalk.hex("#475569")(`  navigating to ${config.url}...`));
       await browser.goto(config.url);
       const state = await analyzer.analyze();
       differ.computeDiff(state); // initialize differ
       console.log(renderPageState(state, config.mode));
     } else {
-      console.log(chalk.dim('  Ready. Type "goto <url>" to start browsing.\n'));
+      console.log(chalk.hex("#475569")('  ready. type "goto <url>" to start.\n'));
     }
   } catch (err) {
     console.error(
@@ -48,7 +48,7 @@ export async function startRepl(config: WebpilotConfig): Promise<void> {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: chalk.cyan("webpilot") + chalk.dim(" > "),
+    prompt: chalk.hex("#38bdf8")("~") + chalk.hex("#475569")(" › "),
     historySize: 200,
   });
 
