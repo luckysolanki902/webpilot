@@ -13,7 +13,8 @@ program
   .argument("[url]", "URL to navigate to")
   .option("--agent", "Agent output mode (JSON structured output)")
   .option("--pipe", "Pipe mode (read commands from stdin)")
-  .option("--mcp", "Start as MCP server")
+  .option("--mcp", "Start as MCP server (stdio)")
+  .option("--mcp-port <port>", "Start MCP server on HTTP port (for ChatGPT, remote agents)")
   .option("--headed", "Run browser in headed mode (visible window)")
   .option("--viewport <dimensions>", "Viewport size (e.g., 1280x720)", "1280x720")
   .option("--timeout <ms>", "Navigation timeout in milliseconds", "30000")
@@ -35,7 +36,8 @@ program
       headless: !options.headed,
       viewport: { width: width || 1280, height: height || 720 },
       timeout: Number(options.timeout) || 30000,
-      mcp: !!options.mcp,
+      mcp: !!options.mcp || !!options.mcpPort,
+      mcpPort: options.mcpPort ? Number(options.mcpPort) : undefined,
       url,
     };
 

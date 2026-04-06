@@ -33,10 +33,27 @@ export class BrowserEngine {
 
   async goto(url: string): Promise<void> {
     const normalizedUrl = this.normalizeUrl(url);
-    await this.activePage.goto(normalizedUrl, {
-      waitUntil: "domcontentloaded",
-      timeout: this.config.timeout,
-    });
+    try {
+      await this.activePage.goto(normalizedUrl, {
+        waitUntil: "domcontentloaded",
+        timeout: this.config.timeout,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("ERR_NAME_NOT_RESOLVED")) {
+        throw new Error(`could not resolve "${new URL(normalizedUrl).hostname}" — check the URL and try again`);
+      }
+      if (msg.includes("ERR_CONNECTION_REFUSED")) {
+        throw new Error(`connection refused at ${normalizedUrl} — is the server running?`);
+      }
+      if (msg.includes("ERR_CONNECTION_TIMED_OUT") || msg.includes("Timeout")) {
+        throw new Error(`timed out loading ${normalizedUrl}`);
+      }
+      if (msg.includes("ERR_CERT")) {
+        throw new Error(`SSL certificate error for ${normalizedUrl}`);
+      }
+      throw new Error(`failed to load ${normalizedUrl}: ${msg.split("\n")[0]}`);
+    }
     // Give JS a moment to settle
     await this.activePage.waitForLoadState("networkidle").catch(() => {});
   }

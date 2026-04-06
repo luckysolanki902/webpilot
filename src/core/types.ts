@@ -90,6 +90,8 @@ export interface WebpilotConfig {
   timeout: number;
   /** Whether to run as MCP server */
   mcp: boolean;
+  /** Port for HTTP MCP server (if set, uses HTTP instead of stdio) */
+  mcpPort?: number;
   /** Initial URL to navigate to */
   url?: string;
 }
