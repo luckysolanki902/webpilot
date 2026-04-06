@@ -1,0 +1,43 @@
+{
+  "name": "webpilot",
+  "version": "0.1.0",
+  "description": "A semantic terminal browser for LLM agents and CLI-native developers. Browse any website from your terminal — no GUI, no mouse, just commands.",
+  "main": "dist/index.js",
+  "bin": {
+    "webpilot": "dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "terminal-browser",
+    "cli-browser",
+    "text-browser",
+    "web-browsing",
+    "accessibility-tree",
+    "mcp-server",
+    "llm-agent",
+    "playwright",
+    "headless-browser",
+    "terminal"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.2"
+  }
+}
