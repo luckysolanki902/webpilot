@@ -1,4 +1,4 @@
-# ⚡ Webpilot
+# Webpilot
 
 **The web, through the eyes of a machine.**
 
@@ -12,42 +12,43 @@ A semantic terminal browser that renders web pages as structured, numbered, inte
 ```
 $ webpilot https://github.com
 
+┌──────────────────────────────────────────────────────────────┐
   GitHub: Let's build from here
   https://github.com
-  ────────────────────────────────────────────
+└──────────────────────────────────────────────────────────────┘
 
-  [1] 🔗 link         Sign in
-  [2] 🔗 link         Sign up
-  [3] 🔍 searchbox    Search GitHub
-  [4] 📌 h1           Build and ship software on a single platform
-  [5] ✏️  textbox      Enter your email address
-  [6] ⏺  button       [ Sign up for GitHub ]
+  [1] › link         Sign in
+  [2] › link         Sign up
+  [3] ⌕ searchbox    Search GitHub
+  [4] # h1           Build and ship software on a single platform
+  [5] _ textbox      Enter your email address
+  [6] ◆ button       ⟦ Sign up for GitHub ⟧
 
-webpilot > click [1]
+~ › click 1
 
-  ↪ Navigated: https://github.com → https://github.com/login
+  Navigated: github.com -> github.com/login
 
-  [1] 📌 h1           Sign in to GitHub
-  [2] ✏️  textbox      Username or email address: (empty)
-  [3] ✏️  textbox      Password: (empty)
-  [4] ⏺  button       [ Sign in ]
-  [5] 🔗 link         Forgot password?
-  [6] 🔗 link         Create an account
+  [1] # h1           Sign in to GitHub
+  [2] _ textbox      Username or email address
+  [3] _ textbox      Password
+  [4] ◆ button       ⟦ Sign in ⟧
+  [5] › link         Forgot password?
+  [6] › link         Create an account
 ```
 
 ## Why Webpilot?
 
 | | Browsh | Lynx | Carbonyl | **Webpilot** |
 |---|---|---|---|---|
-| JavaScript support | ✅ | ❌ | ✅ | ✅ |
-| SPAs (React, Next.js, Vue) | ✅ | ❌ | ✅ | ✅ |
-| LLM-parseable output | ❌ | ❌ | ❌ | ✅ |
-| MCP server for AI agents | ❌ | ❌ | ❌ | ✅ |
-| Element interaction by ID | ❌ | ❌ | ❌ | ✅ |
-| State diffs | ❌ | ❌ | ❌ | ✅ |
-| Semantic (a11y tree) | ❌ | Partial | ❌ | ✅ |
-| No pixels, no rendering | ❌ | ✅ | ❌ | ✅ |
-| Zero cost (runs locally) | ✅ | ✅ | ✅ | ✅ |
+| JavaScript support | Yes | No | Yes | **Yes** |
+| SPAs (React, Next.js, Vue) | Yes | No | Yes | **Yes** |
+| LLM-parseable output | No | No | No | **Yes** |
+| MCP server for AI agents | No | No | No | **Yes** |
+| Element interaction by ID | No | No | No | **Yes** |
+| State diffs | No | No | No | **Yes** |
+| Semantic (a11y tree) | No | Partial | No | **Yes** |
+| No pixels, no rendering | No | Yes | No | **Yes** |
+| Zero cost (runs locally) | Yes | Yes | Yes | **Yes** |
 
 ## Install
 
@@ -184,14 +185,14 @@ Website → Playwright (headless Chromium) → CDP Accessibility Tree → Number
 
 ## Works With Everything
 
-- ✅ `localhost:3000` — your dev server
-- ✅ Public websites — Google, GitHub, HN, anything
-- ✅ React / Next.js / Vue / Angular / Svelte — full JS execution
-- ✅ SPAs with client-side routing
-- ✅ Sites behind login — cookies persist in session
-- ✅ Dynamic content — JS runs before each snapshot
-- ✅ Forms, dropdowns, checkboxes — full interaction
-- ✅ Multi-tab browsing
+- `localhost:3000` — your dev server
+- Public websites — Google, GitHub, HN, anything
+- React / Next.js / Vue / Angular / Svelte — full JS execution
+- SPAs with client-side routing
+- Sites behind login — cookies persist in session
+- Dynamic content — JS runs before each snapshot
+- Forms, dropdowns, checkboxes — full interaction
+- Multi-tab browsing
 
 ## Use Cases
 
