@@ -34,7 +34,15 @@ $ webpilot https://github.com
   [4] ◆ button       ⟦ Sign in ⟧
   [5] › link         Forgot password?
   [6] › link         Create an account
+
+~ › ss github-login.png
+
+  Screenshot saved to github-login.png
 ```
+
+And the screenshot it saves:
+
+<img src="assets/github-example.png" alt="Webpilot screenshot of github.com" width="700" />
 
 ## Why Webpilot?
 
