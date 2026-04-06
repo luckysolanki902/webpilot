@@ -27,8 +27,21 @@
     "headless-browser",
     "terminal"
   ],
-  "author": "",
+  "author": "luckysolanki902",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luckysolanki902/webpilot.git"
+  },
+  "homepage": "https://github.com/luckysolanki902/webpilot",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "chalk": "^5.4.1",
